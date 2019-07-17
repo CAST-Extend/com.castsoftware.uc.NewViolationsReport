@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>com.castsoftware.uc.NewViolationsReport</id>
+    <version>1.0.0</version>
+    <title>New Violations Report</title>
+    <authors>CAST User Community</authors>
+    <owners>CAST</owners>
+    <licenseUrl>https://extend.castsoftware.com/V2/Licenses/Cast-Licence-UserCommunity-1.0.html</licenseUrl>
+    <projectUrl>https://github.com/CAST-Extend/com.castsoftware.uc.NewViolationsReport</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>This extension generates an Excel report with the list of new and fixed violations between the last 2 snapshots. It can be automatically generated after the snapshot in CMS or through command line.</description>
+    <releaseNotes>https://github.com/CAST-Extend/com.castsoftware.uc.NewViolationsReport/wiki</releaseNotes>
+    <tags>Automation Reporting Violations Continuous Improvement AED Quality CSS CAIP8.3.x</tags>
+  </metadata>
+</package>
