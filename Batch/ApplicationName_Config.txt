@@ -1,0 +1,14 @@
+BatchPath=E:\WorkingFolder\Automated_Reports\NewViolations
+ReportPath=E:\WorkingFolder\Automated_Reports\NewViolations\Reports
+ReportLogPath=E:\WorkingFolder\Automated_Reports\NewViolations\Logs
+ApplicationName=Express
+DashboardService=demo_central
+CSSServer=localhost
+userLogin=operator
+database=postgres
+portNumber=2280
+EDURL=http://localhost:7777/DEMO-HD-ED/engineering/index.html#AED0/
+CCSPSQL=E:\WorkingFolder\Automated_Reports\NewViolations\PSQL\psql.exe
+SevenZip="C:\Program Files\7-Zip\7z.exe"
+StatusMail=j.doe@castsoftware.com
+ReportMail=j.doe@castsoftware.com

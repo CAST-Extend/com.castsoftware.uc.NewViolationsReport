@@ -1,0 +1,14 @@
+BatchPath=E:\WorkingFolder\Automated_Reports\NewViolations
+ReportPath=E:\WorkingFolder\Automated_Reports\NewViolations\Reports
+ReportLogPath=E:\WorkingFolder\Automated_Reports\NewViolations\Logs
+ApplicationName=Webgoat
+DashboardService=webgoat_830_1362_central
+CSSServer=localhost
+userLogin=operator
+database=postgres
+portNumber=2280
+EDURL=https://demo-eu.castsoftware.com/Engineering/engineering/index.html#AED5/
+CCSPSQL=E:\WorkingFolder\Automated_Reports\NewViolations\PSQL\psql.exe
+SevenZip="C:\Program Files\7-Zip\7z.exe"
+StatusMail=n.bidaux@castsoftware.com
+ReportMail=n.bidaux@castsoftware.com
