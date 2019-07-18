@@ -1,11 +1,11 @@
 '=======================================================================================================
 '=======================================================================================================
 ' TEST EXECUTION PARAMETERS
-'appName ="Webgoat"
-'csvDate="201903010912" 'CStr(Year(Now)) & CStr(Month(Now)) & CStr(Day(Now)) & Cstr(Hour(Now))& Cstr(Minute(Now))
-'path = "E:\"
-'logpath="E:\Logs"
-'reportpath="E:\Reports"
+appName ="Report_Dev"
+csvDate="201907171311" 'CStr(Year(Now)) & CStr(Month(Now)) & CStr(Day(Now)) & Cstr(Hour(Now))& Cstr(Minute(Now))
+path = "C:\Users\eca\Desktop\Support\Education"
+logpath="C:\Users\eca\Desktop\Support\Education"
+reportpath="C:\Users\eca\Desktop\Support\Education"
 '=============================================================================================================
 '================================================EXECUTION====================================================
 '=============================================================================================================
@@ -118,8 +118,9 @@ Public lastNVRow 'As Integer
 Public lastVLRow 'As Integer
 Public IsNVSheetEmpty
 Public IsFVSheetEmpty
-
-
+Public numberOfQR
+Public numberOfNV
+Public numberOfFV
 
 
 '=======================================================================================================
@@ -184,19 +185,18 @@ On Error Resume Next
     If openFile(CSVFilePath) Then
 		With XLAPP.Workbooks(CSVFileName).ActiveSheet
 			'Delete the first line containing the headlines
-			If 	.Rows.Count <= 1 Then 
+			If 	.UsedRange.Rows.Count <= 1 Then 
 				logText "INFO::OPENANDSPLITCSVFILE: CSV File '" & CSVFilePath & "' is empty."
 				openAndSplitCSVFile = "Empty"			
 			Else
 				.Rows.Item(1).Delete
-				If 	XLAPP.WorksheetFunction.IsError( XLAPP.WorksheetFunction.Find(";", .Cells(1,1).Value, 1)) Then '.Columns.Count > 1 Then
+				If 	XLAPP.WorksheetFunction.IsError( XLAPP.WorksheetFunction.FindB(";", .Cells(1,1).Value, 1)) Then '.Columns.Count > 1 Then
 					logText "INFO::OPENANDSPLITCSVFILE: CSV File '" & CSVFilePath & "' is already splitted."
-				Else
-					
+				Else					
 					.Columns.Item(1).TextToColumns .Cells(1,1),xlDelimited, xlTextQualifierDoubleQuote, False, False, True, False,False,False,False
 				End If
 				openAndSplitCSVFile = True
-				logText "DONE::OPENANDSPLITCSVFILE - CSV File '" & CSVFilePath & "' splitted."
+				logText "DONE::OPENANDSPLITCSVFILE - CSV File '" & CSVFilePath & "' has been splitted."
 			End If
 		End With
 	Else
@@ -222,8 +222,9 @@ On Error Resume Next
 	logText "		COPYCSVTOFINAL:: " & FileName & "," & DestinationSheet & "," & DestinationCellNumber & "," & IsFirstSheet
 	With XLAPP.Workbooks(FileName).ActiveSheet	
 		If IsFirstSheet Then
-			lastRow = .range("A1").End(xlDown).Row			
-			If lastRow > MAX_NB_QR_LINES Then lastRow = MAX_NB_QR_LINES
+			lastRow = .UsedRange.Rows.Count
+			'Msgbox "lastRow in first sheet " & lastRow 
+			If lastRow > MAX_NB_QR_LINES Then lastRow = MAX_NB_QR_LINES	
 			.Sort.SortFields.Clear
 			'order by rule criticality then by weight
 			.Sort.SortFields.Add .range(CSV1_CRIT_COL_ID & "1",CSV1_CRIT_COL_ID & lastRow) , xlSortOnValues, xlDescending ', , xlSortNormal
@@ -248,7 +249,7 @@ On Error Resume Next
 			XLAPP.Workbooks(finalFileName).Worksheets(DestinationSheet).range(S1_RNAME_COL_ID & DestinationCellNumber).PasteSpecial xlPasteValues
 		Else
 		'whole content of other sheets are pasted
-			lastRow = 	.range("A1").End(xlDown).Row
+			lastRow = 	.UsedRange.Rows.Count '.range("A1").End(xlDown).Row
 			If lastRow > MAX_NB_VI_LINES Then lastRow = MAX_NB_VI_LINES
 			.range(CSV2_CRIT_COL_ID & "1", CSV2_CRIT_COL_ID & lastRow).Replace CStr(1), "X"
 			.range(CSV2_CRIT_COL_ID & "1", CSV2_CRIT_COL_ID & lastRow).Replace CStr(0), ""	'CRITICALITY COLUMN REPLACEMENT
@@ -258,12 +259,13 @@ On Error Resume Next
 	End With
     XLAPP.Workbooks(finalFileName).Save
     XLAPP.CutCopyMode = False
+	XLAPP.Workbooks(FileName).Close False
 	
 	If Err Then 
 		logText "ERROR::COPYCSVTOFINAL on file "& FileName & " : " & Err.Description
-		copyCSVToFinal = False
+		copyCSVToFinal = -1 'False
 	Else	
-		copyCSVToFinal = True
+		copyCSVToFinal = lastRow 'True
 	End If
 On Error Goto 0
 End Function
@@ -376,7 +378,7 @@ On Error Resume Next
     
     
 	If openAndSplitCSVFile(reportFolder & "\" & cQRCSVFileName,cQRCSVFileName) = True Then
-	
+		
 		If openFile(mainFolder & "\" & TEMPLATE_FILE_NAME) = True Then
 			
 			XLAPP.Workbooks(TEMPLATE_FILE_NAME).SaveCopyAs reportFolder & "\" & finalFileName
@@ -386,9 +388,9 @@ On Error Resume Next
 				XLAPP.Workbooks(finalFileName).Worksheets.Item(1).Name = tab_qr_evolution 'Renaming sheets with final names
 				XLAPP.Workbooks(finalFileName).Worksheets.Item(1).DisplayPageBreaks = False
 				'import the content of Main CSV file.
-				If copyCSVToFinal (cQRCSVFileName, tab_qr_evolution, S1_FIRST_LINE_NUM, True) = True Then	
-
-					XLAPP.Workbooks(cQRCSVFileName).Close False
+				numberOfQR = copyCSVToFinal (cQRCSVFileName, tab_qr_evolution, S1_FIRST_LINE_NUM, True)
+				'XLAPP.Workbooks(cQRCSVFileName).Close False
+				If  numberOfQR > 0 Then	
 					'proceed to other CSV sheets
 					If openAndSplitCSVFile(reportFolder & "\" & cNVCSVFileName,cNVCSVFileName) = "Empty" Then IsNVSheetEmpty = True
 
@@ -405,8 +407,10 @@ On Error Resume Next
 						'CSV File N°1 - New violations
 						lastNVRow = 1
 						If IsNVSheetEmpty = False Then 
-							If copyCSVToFinal(cNVCSVFileName, tab_violation_list, 2, False) Then
-								lastNVRow = XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list).range("A1").End(xlDown).Row
+							numberOfNV = copyCSVToFinal(cNVCSVFileName, tab_violation_list, 2, False)
+							If numberOfNV > -1 Then
+							lastNVRow = numberOfNV +1
+'XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list).UsedRange.Rows.Count '.range("A1").End(xlDown).Row
 							Else 
 								logText "ERROR::GenerateEducationReport: Failed to copy CSV file N°1.Generation aborted"
 								WScript.echo "GenerateEducationReport: Failed to copy CSV file Item 1.Generation aborted"
@@ -414,12 +418,15 @@ On Error Resume Next
 								Exit Function				
 							End If
 						End If
-						XLAPP.Workbooks(cNVCSVFileName).Close False
+						'Msgbox "lastNVRow= "& lastNVRow
+						'XLAPP.Workbooks(cNVCSVFileName).Close False
 						'CSV File N°2 - Fixed Violations
 						lastVLRow = lastNVRow
 						If IsFVSheetEmpty = False Then 
-							If copyCSVToFinal (cFVCSVFileName, tab_violation_list, lastNVRow + 1, False) Then
-								lastVLRow = XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list).range("A1").End(xlDown).Row
+							numberOfFV = copyCSVToFinal (cFVCSVFileName, tab_violation_list, lastNVRow + 1, False) 
+							If numberOfFV > -1 Then
+								lastVLRow = lastNVRow + numberOfFV
+								'lastVLRow = XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list).UsedRange.Rows.Count '.range("A1").End(xlDown).Row
 							Else 
 								logText "ERROR::GenerateEducationReport: Failed to copy CSV file N°2.Generation aborted"
 								WScript.echo "GenerateEducationReport: Failed to copy CSV file Item 2.Generation aborted"
@@ -427,14 +434,14 @@ On Error Resume Next
 								Exit Function				
 							End If
 						End If
-						XLAPP.Workbooks(cFVCSVFileName).Close False
+						'XLAPP.Workbooks(cFVCSVFileName).Close False
 						
 						FormatSecondSheet 	
 						XLAPP.Workbooks(finalFileName).Save			
 						FormatFirstSheet
 						XLAPP.Workbooks(finalFileName).Save
+						XLAPP.Workbooks(finalFileName).Worksheets.Item(2).DisplayPageBreaks = True
 					End If
-					XLAPP.Workbooks(finalFileName).Worksheets.Item(2).DisplayPageBreaks = True
 					XLAPP.Workbooks(finalFileName).Worksheets.Item(1).DisplayPageBreaks = True
 					XLAPP.Workbooks(finalFileName).Close True
 					logText ">>>>>>Process ended with application : " & applicationName & vbCrLf & ">>>>>>FinalFileName : " & finalFileName
@@ -481,20 +488,27 @@ End Function
 Function FormatSecondSheet ()
 On Error Resume Next
 	'>>>>>>>>>>>>>Formatting Sheet N2°
+			'First column should never contain empty values
 	logText "		FORMAT SECOND SHEET"
 	Dim link, keepLineStyle, keepLineWeight, keepLineColor
 		
 		With XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list) 
 			.Activate	
-			'First column should never contain empty values
+			'Copy last row format
 			keepLineStyle =  .range("A" & S2_TEMPL_LAST_ROW, S2_LAST_COL_ID & S2_TEMPL_LAST_ROW).Borders(xlEdgeBottom).LineStyle
 			keepLineWeight = .range("A" & S2_TEMPL_LAST_ROW, S2_LAST_COL_ID & S2_TEMPL_LAST_ROW).Borders(xlEdgeBottom).Weight
 			keepLineColor = .range("A" & S2_TEMPL_LAST_ROW, S2_LAST_COL_ID & S2_TEMPL_LAST_ROW).Borders(xlEdgeBottom).Color
+			
 			
 			'Format all lines
 			.range("A2", S2_LAST_COL_ID & "3").Copy
 			.range("A2", S2_LAST_COL_ID & lastVLRow).PasteSpecial xlPasteFormats
 			
+			'Clear all leftover lines formatting
+			If S2_TEMPL_LAST_ROW > lastVLRow Then  
+				.range("A" & lastVLRow+1,S2_LAST_COL_ID & S2_TEMPL_LAST_ROW).ClearFormats
+				.range("A" & lastVLRow+1,S2_LAST_COL_ID & S2_TEMPL_LAST_ROW).ClearContents
+			End If
 			'adding URLs to the last column only for new violations
 			i = 2				
 			Do While i <= lastNVRow
@@ -545,6 +559,7 @@ On Error Resume Next
 	Dim lastQRRow 'As Integer
 	Dim lastRow 'As Integer
 
+
 	If IsNVSheetEmpty = False or IsFVSheetEmpty = False Then 
 		Set secondSheet = XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list)
 	End If
@@ -553,40 +568,49 @@ On Error Resume Next
 		.Activate
 		
 		'logText "Filling the En-tete"
+		'logtext S1_RNAME_COL_ID
 		.range(S1_RNAME_COL_ID & "2").Value = applicationName
 		.range(S1_RNAME_COL_ID & "3").Value = latestVersionName & " / " & latestVersionDate
 		.range(S1_RNAME_COL_ID & "4").Value = previousVersionName & " / " & previousVersionDate
 		.range("F1").Value = reportGenerationDate
+		lastQRRow = numberOfQR + S1_FIRST_LINE_NUM - 1 '.Range("A" & S1_FIRST_LINE_NUM).Rows.Count '.End(xlDown).Row
 		'Last Row Style is copied
 		'keepLineStyle = 	.range("A" & S1_TEMPL_LAST_ROW, S1_LAST_COL_ID & S1_TEMPL_LAST_ROW).Borders(xlEdgeBottom).LineStyle
 		'keepLineWeight = 	.range("A" & S1_TEMPL_LAST_ROW, S1_LAST_COL_ID & S1_TEMPL_LAST_ROW).Borders(xlEdgeBottom).Weight
 		'keepLineColor = 	.range("A" & S1_TEMPL_LAST_ROW, S1_LAST_COL_ID & S1_TEMPL_LAST_ROW).Borders(xlEdgeBottom).Color
-		
 		'First and last Column should never contain empty values
-		lastQRRow = 	.range("A" & S1_FIRST_LINE_NUM).End(xlDown).Row
-		
-		'format last row
+
+				logText "format last row"
 		.range("A" & CStr(S1_TEMPL_LAST_ROW-1), S1_LAST_COL_ID & S1_TEMPL_LAST_ROW).Copy
 		.range("A" & lastQRRow, S1_LAST_COL_ID & CStr(lastQRRow+1)).PasteSpecial(xlPasteFormats)
+		
+		'Clear all formatting for QR rule lines
+		if S1_TEMPL_LAST_ROW > lastQRRow Then  
+			.range("A" & lastQRRow+2,S1_LAST_COL_ID & S1_TEMPL_LAST_ROW).ClearFormats
+			.range("A" & lastQRRow+2,S1_LAST_COL_ID & S1_TEMPL_LAST_ROW).ClearContents
+		End If
+		
+		logText "format other rows"
+		.range("A" & S1_FIRST_LINE_NUM, S1_LAST_COL_ID & Cstr(S1_FIRST_LINE_NUM+1)).Copy
+		.range("A" & S1_FIRST_LINE_NUM, S1_LAST_COL_ID & lastQRRow).PasteSpecial(xlPasteFormats)
+		
 		'.range("A" & lastQRRow+1, S1_LAST_COL_ID & lastQRRow+1).Borders(xlEdgeBottom).LineStyle = keepLineStyle 
 		'.range("A" & lastQRRow+1, S1_LAST_COL_ID & lastQRRow+1).Borders(xlEdgeBottom).Weight = keepLineWeight 
 		'.range("A" & lastQRRow+1, S1_LAST_COL_ID & lastQRRow+1).Borders(xlEdgeBottom).Color = keepLineColor 
 		
-		'format other rows
-		.range("A" & S1_FIRST_LINE_NUM, S1_LAST_COL_ID & Cstr(S1_FIRST_LINE_NUM+1)).Copy
-		.range("A" & S1_FIRST_LINE_NUM, S1_LAST_COL_ID & lastQRRow).PasteSpecial(xlPasteFormats)
 		
-		'copy the formulAs in 4th column
+				logText "copy the formulAs in 4th column"
 		.range(S1_EVOL_COL_ID & S1_FIRST_LINE_NUM).Copy
 		.range(S1_EVOL_COL_ID & Cstr(S1_FIRST_LINE_NUM+1), S1_EVOL_COL_ID & lastQRRow).PasteSpecial(xlPasteFormulas)
 		
-		'reformat last column date
+				logText "reformat last column date"
 		'.Range(S1_LAST_COL_ID & S1_FIRST_LINE_NUM, S1_LAST_COL_ID & lastQRRow).Value = 	.Evaluate("LEFT(" & 	.Range(S1_LAST_COL_ID & 'S1_FIRST_LINE_NUM, S1_LAST_COL_ID & lastQRRow).Address & "," & S1_FIRST_LINE_NUM & ")")
     
-		'logText "loop:Add link to second sheet"
+		logText "loop:Add link to second sheet"
 		'Loop on all rows
 		i = S1_FIRST_LINE_NUM
 		If IsNVSheetEmpty = False Or IsFVSheetEmpty = False Then
+				logText "do on all rows : adding link"
 			Do While i <= lastQRRow
 				'add links to second sheet only to New Violations"
 				If 	.Cells(i, S1_NV_COL_NUM).Value>CDbl(0) Then
@@ -606,7 +630,7 @@ On Error Resume Next
 			Loop
 		End If
 		
-		'add total row:
+				logText "add total row:"
 		.Cells(lastQRRow+1,S1_RNAME_COL_NUM).Value = "TOTAL"
 		.Cells(lastQRRow+1,S1_NV_COL_NUM).Value = 	"=SUM(" & S1_NV_COL_ID & S1_FIRST_LINE_NUM & ":" & S1_NV_COL_ID & lastQRRow & ")"
 		.Cells(lastQRRow+1,S1_FV_COL_NUM).Value = 	"=SUM(" & S1_FV_COL_ID & S1_FIRST_LINE_NUM & ":" & S1_FV_COL_ID & lastQRRow & ")"
