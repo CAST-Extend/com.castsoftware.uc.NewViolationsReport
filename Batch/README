@@ -1,35 +1,38 @@
 *******************************************************************************
-***	TOOL DESCRIPTION														***
+***	BATCH DESCRIPTION														***
 *******************************************************************************
-***	This tool is intended to generate Excel Summary Reports on the new 		***
-***	and fixed violations for the all CAST Quality Rules comparing the last 	***
-***	2 snapshots only.														***
+***	This batch is intended to automatically generate an Excel Reports to 	***
+***	list all the new and fixed violations for the all CAST Quality Rules 	***
+***	between the last 2 snapshots.											***
 *******************************************************************************
 
 *******************************************************************************
 ***	PRE-REQUISITES 															***
 *******************************************************************************
-***	7Zip : https://7-zip.org/download.html									***
-***	Microsft Excel															***
-***	At least 2 snapshots successfully completed on different releases		***
+***	Microsoft Excel															***
+***	At least 2 snapshots successfully completed on 2 different releases		***
 ***																			***
 *******************************************************************************
 
 *******************************************************************************
 ***	PACKAGE CONTENT															***
 *******************************************************************************
-***	README 							This file - user guide					***
-***	Education Report Presentation.pptx	Presentation of Education Report 	***
-***	LaunchReportGeneration.bat:		Main batch file							***
-***	GenerateCSVReports.bat: 		Intermediate batch file					***
-***	GenerateExcelReport.vbs: 		VB script to generate the Excel Report	***
+***	README :							User guide (this file)				***
+***	New Violations Report Presentation.pptx : 								***
+***									Presentation of New Violations Report 	***
+***	LaunchReportGeneration.bat :	Main batch file							***
+***	GenerateCSVReports.bat : 		Intermediate batch file					***
+***	GenerateExcelReport.vbs : 		VB script to generate the Excel Report	***
 ***	ApplicationName_Config.txt : 	Configuration file template				***
-***	APP_NAME - CAST - CI Review - DATETIME.xlsx: 	Excel file template		***
-***	Sample: 						Folder containing sample reports		***
+***	APP_NAME - CAST - CI Review - DATETIME.xlsx : 							***
+***									Excel file template						***
+***	Sample folder: 					Folder containing sample reports		***
+***	PSQL folder: 					Folder with the psql.exe utility		***
+***	7-zip folder: 					Folder with a files archiver utility	 	***
 *******************************************************************************
 
 *******************************************************************************
-***	HOW TO EXECUTE THE TOOL AND GENERATE THE REPORTS						***
+***	HOW TO EXECUTE THE BATCH PROGRAM AND GENERATE THE REPORTS				***
 *******************************************************************************
 ***																			***
 *** Step 1:		Copy and rename the configuration file template				***
@@ -58,8 +61,10 @@
 ***				folder path for more details								***
 *** Step 7:		Open the generated Excel file in the report folder			***
 ***				APP_NAME - CAST - CI Review - DATETIME.xlsx Excel report 	***
-***				should contain 2 tabs about the comparison of the last 		***
-***				2 snapshots for the all CAST quality rules	 				***
+***				should contain 2 Excel sheets : a summary sheet on the new 	***
+***				and fixed violations and a sheet with the list of new and 	***
+***				fixed violations between the last 2 snapshots for the all 	***
+***				CAST quality rules that have been checked 					***
 *******************************************************************************
 
 *******************************************************************************
