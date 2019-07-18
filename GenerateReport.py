@@ -48,7 +48,7 @@ class Report(ApplicationLevelExtension):
                     logging.info('* Dashboard URL : ' + str(url_info[0]))
                     self.EDURL = url_info[0]
                 else:
-                    logging.info('* Dashboard URL : No Engineering Dashboard URL defined in CAST Management Studio')
+                    logging.warning('* Dashboard URL : No Engineering Dashboard URL defined in CAST Management Studio')
                     self.EDURL = "https://[ENGINEERING-DASHBOARD-URL-TO-CHANGE]/Engineering/engineering/index.html#AED[PUT NUMBER]/"
         pass
 
