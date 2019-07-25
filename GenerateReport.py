@@ -168,14 +168,17 @@ class Report(ApplicationLevelExtension):
                 logging.info('* Excel report generated : ' + os.path.join(self.rptdir, latest_report))
                 msg = "New Violations : " + self.NewViolationsCount + ' - Fixed violations : ' + self.FixedViolationsCount
                 logging.info('* ' + msg)
-                publish_report('List of the New Violations between the last 2 snapshots', status, "New Violations Report", msg, detail_report_path=os.path.join(self.rptdir, latest_report))
+                latest_report = os.path.join(self.rptdir, latest_report)
+                os.rename(latest_report, latest_report.replace(" CI Review ", " NV Review "))
+                latest_report = latest_report.replace(" CI Review ", " NV Review ")
+                publish_report('New Violations Report', status, "List of the New Violations between the last 2 snapshots", msg, detail_report_path=latest_report)
             else:
                 status = "KO"
                 logging.warning('* Excel report generated : ERROR')
-                publish_report('List of the New Violations between the last 2 snapshots', status, "New Violations Report", 'Error in the report generation', detail_report_path='')
+                publish_report('New Violations Report', status, "List of the New Violations between the last 2 snapshots", 'Error in the report generation', detail_report_path='')
         else:
             status = "Warning"
             logging.warning('* Excel report generated : report not generated because there is only one snapshot')
-            publish_report('List of the New Violations between the last 2 snapshots', status, "New Violations Report", 'No report : only one snasphot', detail_report_path='')
+            publish_report('New Violations Report', status, "List of the New Violations between the last 2 snapshots", 'No report : only one snasphot', detail_report_path='')
         logging.info('***** End New Violations Report  *****')
         pass
