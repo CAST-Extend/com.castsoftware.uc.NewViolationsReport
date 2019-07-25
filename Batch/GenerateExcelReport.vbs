@@ -1,11 +1,11 @@
 '=======================================================================================================
 '=======================================================================================================
 ' TEST EXECUTION PARAMETERS
-appName ="Report_Dev"
-csvDate="201907171311" 'CStr(Year(Now)) & CStr(Month(Now)) & CStr(Day(Now)) & Cstr(Hour(Now))& Cstr(Minute(Now))
-path = "C:\Users\eca\Desktop\Support\Education"
-logpath="C:\Users\eca\Desktop\Support\Education"
-reportpath="C:\Users\eca\Desktop\Support\Education"
+'appName ="Report_Dev"
+'csvDate="201907171311" 'CStr(Year(Now)) & CStr(Month(Now)) & CStr(Day(Now)) & Cstr(Hour(Now))& Cstr(Minute(Now))
+'path = "C:\Education"
+'logpath="C:\Education"
+'reportpath="C:\Education"
 '=============================================================================================================
 '================================================EXECUTION====================================================
 '=============================================================================================================
@@ -223,7 +223,7 @@ On Error Resume Next
 	With XLAPP.Workbooks(FileName).ActiveSheet	
 		If IsFirstSheet Then
 			lastRow = .UsedRange.Rows.Count
-			'Msgbox "lastRow in first sheet " & lastRow 
+
 			If lastRow > MAX_NB_QR_LINES Then lastRow = MAX_NB_QR_LINES	
 			.Sort.SortFields.Clear
 			'order by rule criticality then by weight
@@ -297,7 +297,7 @@ Sub Init(paramAppName, paramCSVDate, paramPath, paramLogPath, paramReportPath)
 	logText ">>>>>>InitVariables: " & applicationName & "," & dateSuffix & "," & mainFolder
 
     'Change following Values depending on testing or production phases
-	XLAPP.Visible = False
+	XLAPP.Visible = False						 
     XLAPP.DisplayAlerts = False
 	
 	
@@ -389,7 +389,7 @@ On Error Resume Next
 				XLAPP.Workbooks(finalFileName).Worksheets.Item(1).DisplayPageBreaks = False
 				'import the content of Main CSV file.
 				numberOfQR = copyCSVToFinal (cQRCSVFileName, tab_qr_evolution, S1_FIRST_LINE_NUM, True)
-				'XLAPP.Workbooks(cQRCSVFileName).Close False
+
 				If  numberOfQR > 0 Then	
 					'proceed to other CSV sheets
 					If openAndSplitCSVFile(reportFolder & "\" & cNVCSVFileName,cNVCSVFileName) = "Empty" Then IsNVSheetEmpty = True
@@ -410,7 +410,7 @@ On Error Resume Next
 							numberOfNV = copyCSVToFinal(cNVCSVFileName, tab_violation_list, 2, False)
 							If numberOfNV > -1 Then
 							lastNVRow = numberOfNV +1
-'XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list).UsedRange.Rows.Count '.range("A1").End(xlDown).Row
+
 							Else 
 								logText "ERROR::GenerateEducationReport: Failed to copy CSV file N°1.Generation aborted"
 								WScript.echo "GenerateEducationReport: Failed to copy CSV file Item 1.Generation aborted"
@@ -418,15 +418,13 @@ On Error Resume Next
 								Exit Function				
 							End If
 						End If
-						'Msgbox "lastNVRow= "& lastNVRow
-						'XLAPP.Workbooks(cNVCSVFileName).Close False
 						'CSV File N°2 - Fixed Violations
 						lastVLRow = lastNVRow
 						If IsFVSheetEmpty = False Then 
 							numberOfFV = copyCSVToFinal (cFVCSVFileName, tab_violation_list, lastNVRow + 1, False) 
 							If numberOfFV > -1 Then
 								lastVLRow = lastNVRow + numberOfFV
-								'lastVLRow = XLAPP.Workbooks(finalFileName).Worksheets(tab_violation_list).UsedRange.Rows.Count '.range("A1").End(xlDown).Row
+											
 							Else 
 								logText "ERROR::GenerateEducationReport: Failed to copy CSV file N°2.Generation aborted"
 								WScript.echo "GenerateEducationReport: Failed to copy CSV file Item 2.Generation aborted"
@@ -532,10 +530,8 @@ On Error Resume Next
 			'logText "Loop:URL column"
 			
 			.Columns.Item(URL_COL_NUM).Clear
-			.Rows(1).Select
 			.Rows(1).AutoFilter	
 			.UsedRange.Columns.AutoFit	
-			'.Cells(1,1).Select
 			 XLAPP.Goto .Cells(1,1), True
 		End With
 
@@ -568,7 +564,7 @@ On Error Resume Next
 		.Activate
 		
 		'logText "Filling the En-tete"
-		'logtext S1_RNAME_COL_ID
+		
 		.range(S1_RNAME_COL_ID & "2").Value = applicationName
 		.range(S1_RNAME_COL_ID & "3").Value = latestVersionName & " / " & latestVersionDate
 		.range(S1_RNAME_COL_ID & "4").Value = previousVersionName & " / " & previousVersionDate
